@@ -1,1 +1,51 @@
+# Virtual Environment
+venv/
+env/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / Packaging
+build/
+dist/
+*.egg-info/
+
+# Environment Variables
 .env
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Logs
+logs/
+*.log
+
+# SQLite Database
+*.db
+*.sqlite3
+
+# Test / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Mypy / Ruff / Type Checking
+.mypy_cache/
+.ruff_cache/
+
+# Runtime Files
+*.pid
+*.seed
+
+# Temporary Files
+*.tmp
+*.temp
