@@ -1,0 +1,190 @@
+### 1. VALID BOOKING — Standard pricing (non-lunar window)
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 3,
+  "participant_weights": [180, 200, 190],
+  "booking_date": "2026-03-10"
+}
+
+> {%
+  client.test("Status 200", function() {
+    client.assert(response.status === 200, "Expected 200");
+  });
+  client.test("Status is available", function() {
+    client.assert(response.body.status === "available", "Expected available");
+  });
+  client.test("Pricing label present", function() {
+    client.assert(response.body.pricing.pricing_label !== undefined, "Missing pricing_label");
+  });
+%}
+
+###
+
+### 2. NEW MOON PREMIUM — booking_date near a new moon (2026-02-17 is a new moon)
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 2,
+  "participant_weights": [160, 175],
+  "booking_date": "2026-02-17"
+}
+
+> {%
+  client.test("Status 200", function() {
+    client.assert(response.status === 200, "Expected 200");
+  });
+  client.test("New Moon Premium applied", function() {
+    client.assert(
+      response.body.pricing.pricing_label.includes("New Moon"),
+      "Expected New Moon Premium label"
+    );
+  });
+  client.test("Price is 125", function() {
+    client.assert(response.body.pricing.final_price === 125.0, "Expected $125");
+  });
+%}
+
+###
+
+### 3. FULL MOON DISCOUNT — booking_date near a full moon (2026-03-03 is a full moon)
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 1,
+  "participant_weights": [200],
+  "booking_date": "2026-03-03"
+}
+
+> {%
+  client.test("Status 200", function() {
+    client.assert(response.status === 200, "Expected 200");
+  });
+  client.test("Full Moon Discount applied", function() {
+    client.assert(
+      response.body.pricing.pricing_label.includes("Full Moon"),
+      "Expected Full Moon Discount label"
+    );
+  });
+  client.test("Price is 85", function() {
+    client.assert(response.body.pricing.final_price === 85.0, "Expected $85");
+  });
+%}
+
+###
+
+### 4. GROUP SIZE MISMATCH — group_size does not match weights array length
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 2,
+  "participant_weights": [180, 200, 190],
+  "booking_date": "2026-03-10"
+}
+
+> {%
+  client.test("Status 422", function() {
+    client.assert(response.status === 422, "Expected 422 for mismatch");
+  });
+%}
+
+###
+
+### 5. OVERWEIGHT PARTICIPANT — exceeds all vessel limits
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 1,
+  "participant_weights": [600],
+  "booking_date": "2026-03-10"
+}
+
+> {%
+  client.test("Status 400 fleet exceeded", function() {
+    client.assert(response.status === 400, "Expected 400 for fleet capacity exceeded");
+  });
+%}
+
+###
+
+### 6. FLEET CAPACITY EXCEEDED — too many participants for entire fleet
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 14,
+  "participant_weights": [150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150],
+  "booking_date": "2026-03-10"
+}
+
+> {%
+  client.test("Status 400 over capacity", function() {
+    client.assert(response.status === 400, "Expected 400 for over capacity");
+  });
+%}
+
+###
+
+### 7. INVALID DATE FORMAT — should fail schema validation
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 1,
+  "participant_weights": [180],
+  "booking_date": "15-03-2026"
+}
+
+> {%
+  client.test("Status 422 bad date", function() {
+    client.assert(response.status === 422, "Expected 422 for invalid date format");
+  });
+%}
+
+###
+
+### 8. NEGATIVE WEIGHT — should fail schema validation
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 1,
+  "participant_weights": [-50],
+  "booking_date": "2026-03-10"
+}
+
+> {%
+  client.test("Status 422 negative weight", function() {
+    client.assert(response.status === 422, "Expected 422 for negative weight");
+  });
+%}
+
+###
+
+### 9. TANDEM ALLOCATION — 6 participants forces tandem usage
+POST http://127.0.0.1:8000/check-availability
+Content-Type: application/json
+
+{
+  "group_size": 6,
+  "participant_weights": [200, 200, 200, 200, 200, 200],
+  "booking_date": "2026-03-10"
+}
+
+> {%
+  client.test("Status 200", function() {
+    client.assert(response.status === 200, "Expected 200");
+  });
+  client.test("Tandem kayak used", function() {
+    const allocations = response.body.fleet.allocations;
+    const hasTandem = allocations.some(a => a.vessel === "tandem_kayak");
+    client.assert(hasTandem, "Expected tandem_kayak in allocations");
+  });
+%}
+
+###
