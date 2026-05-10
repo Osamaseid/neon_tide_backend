@@ -1,3 +1,9 @@
 2026-05-10 01:47:23,072 | INFO | neon_tide | Neon Tide API starting up.
 2026-05-10 14:34:59,126 | INFO | neon_tide | Neon Tide API starting up.
 2026-05-10 14:36:33,020 | INFO | neon_tide | Availability check | date=2026-03-10 | group=3
+2026-05-10 14:58:54,838 | INFO | neon_tide | Neon Tide API starting up.
+2026-05-10 14:59:03,389 | INFO | neon_tide | Availability check | date=2026-03-10 | group=3
+2026-05-10 15:02:12,722 | INFO | neon_tide | Neon Tide API shutting down.
+2026-05-10 15:02:18,527 | INFO | neon_tide | Neon Tide API starting up.
+2026-05-10 15:02:30,033 | INFO | neon_tide | Availability check | date=2026-03-10 | group=3
+2026-05-10 15:20:07,654 | INFO | neon_tide | Neon Tide API shutting down.
